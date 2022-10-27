@@ -1,7 +1,7 @@
 {
     "name": "Show Pony",
-    "description": "Focus your audience on what matters",
-    "version": "0.1",
+    "description": "Keep your audience focused on what matters.",
+    "version": "1.0",
     "manifest_version": 3,
 
     "action": {
@@ -13,7 +13,7 @@
         "128": "/images/128x128.png"
       }
     },
-    "permissions": ["storage", "activeTab", "scripting"],
+    "permissions": ["activeTab", "scripting"],
     "background": {
       "service_worker": "background.js"
     },

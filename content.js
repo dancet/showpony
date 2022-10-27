@@ -1,6 +1,5 @@
 // content.js
-(function () {
-    
+(function () {    
     // ensure the content script is only executed once when the icon is clicked
     if (window.contentScriptInjected !== true) {
         window.contentScriptInjected = true; // global scope
@@ -9,8 +8,8 @@
         chrome.runtime.sendMessage({iconText: "on"});
 
         // get current window dimensions
-        let _docWidth = document.body.offsetWidth; // (document.width !== undefined) ? document.width : document.body.offsetWidth;
-        let _docHeight = document.body.offsetHeight; // (document.height !== undefined) ? document.height : document.body.offsetHeight;
+        let _docWidth = document.body.offsetWidth;
+        let _docHeight = document.body.offsetHeight;
 
         // z-index super high to try and ensure it sits over everything else
         let css = 'position:fixed; background:transparent; z-index:100000; top:0; left:0; bottom:0; right:0;';
@@ -27,8 +26,8 @@
         var ctx = canvas.getContext("2d");
 
         // track where the canvas is on the window - (used to help calculate mouseX/mouseY)
-        var offsetX; // = canvas.offsetLeft; note - these seemed to work, but I don't know if they're better or worse than the current method
-        var offsetY; // = canvas.offsetTop;
+        var offsetX;
+        var offsetY;
 
         // these will hold the starting mouse position
         var startX;
@@ -43,7 +42,6 @@
 
         // functions
         function updateOffset() {
-            // EXPERIMENTAL
             offsetX = canvas.getBoundingClientRect().left;
             offsetY = canvas.getBoundingClientRect().top;
         }
@@ -52,9 +50,8 @@
             e.preventDefault();
             e.stopPropagation();
 
-            // check if the mouse is clicking in the grey area
-            // this defines the existing rectangle - ctx.clearRect(startX, startY, width, height);
-            // TODO: work out the best way to clear. On mouse click anywhere or just in the grey area? Clicking an on-screen button? Not sure...
+            // clear any existing shade/box
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // update the x/y offsets to account for scroll position
             updateOffset()
@@ -76,8 +73,6 @@
                 return;
             }
 
-            // clear the existing defined box
-
             // update the x/y offsets to account for scroll position
             updateOffset()
             
@@ -93,9 +88,7 @@
             endY = mouseY - startY;
 
             // draw the grey background
-            //ctx.beginPath();
             ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
-            //ctx.fillRect(offsetX, offsetY, _docWidth, _docHeight);  // <-- this is working, windowWidth, windowHeight
             ctx.fillRect(0, 0, canvas.width, canvas.height);
                     
             // clear the space in the middle based on start and end mouse movement
@@ -123,7 +116,6 @@
         }
 
     } else {
-
         // set this so we re-enable on the next click of the icon
         window.contentScriptInjected = false;
 
@@ -138,5 +130,4 @@
             return;
         }    
     }
-
 })();
