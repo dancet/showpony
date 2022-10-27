@@ -5,24 +5,17 @@
     "manifest_version": 3,
 
     "action": {
-      "default_title": "Start Show Pony",
+      "default_title": "Show Pony - keep your audience focused",
       "default_icon": {
-        "16": "/images/sp-bw-16x16.png",
-        "32": "/images/sp-bw-32x32.png",
-        "48": "/images/sp-bw-32x32.png",
-        "128": "/images/sp-bw-32x32.png"
+        "16": "/images/16x16.png",
+        "32": "/images/32x32.png",
+        "48": "/images/48x48.png",
+        "128": "/images/128x128.png"
       }
     },
     "permissions": ["storage", "activeTab", "scripting"],
     "background": {
       "service_worker": "background.js"
-    },
-
-    "icons": {
-        "16": "/images/sp-bw-16x16.png",
-        "32": "/images/sp-bw-32x32.png",
-        "48": "/images/sp-bw-32x32.png",
-        "128": "/images/sp-bw-32x32.png"
     },
     "options_page": "options.html"
   }

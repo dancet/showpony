@@ -1,27 +1,12 @@
 // content.js
 (function () {
-
-    var initialized = false;
-    if (!initialized) {
-        initialized = true;
-        
-        // Let each content script manage its own active state.
-        let isActive = false;
-        // When the background page sends a message telling this tab to toggle its
-        // active state, do so, and then respond with the new active state.
-        chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-            
-            console.log(request.message);
-            
-            if(request.message === "toggle-tab") {
-                isActive = !isActive; // toggle the active state
-                sendResponse(isActive); // respond with the new active state
-            }
-        });
-    }
-
+    
+    // ensure the content script is only executed once when the icon is clicked
     if (window.contentScriptInjected !== true) {
         window.contentScriptInjected = true; // global scope
+
+        // add a badge to the icon (listener code in background.js)
+        chrome.runtime.sendMessage({iconText: "on"});
 
         // get current window dimensions
         let _docWidth = document.body.offsetWidth; // (document.width !== undefined) ? document.width : document.body.offsetWidth;
@@ -109,7 +94,7 @@
 
             // draw the grey background
             //ctx.beginPath();
-            ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+            ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
             //ctx.fillRect(offsetX, offsetY, _docWidth, _docHeight);  // <-- this is working, windowWidth, windowHeight
             ctx.fillRect(0, 0, canvas.width, canvas.height);
                     
@@ -139,9 +124,13 @@
 
     } else {
 
+        // set this so we re-enable on the next click of the icon
         window.contentScriptInjected = false;
 
-        // handle toggling the chrome extension
+        // clear the badge text
+        chrome.runtime.sendMessage({iconText: "off"});
+
+        // remove the HTML element that was added before
         var showPony = document.getElementById('showpony');
 
         if (showPony) {
