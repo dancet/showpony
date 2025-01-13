@@ -1,6 +1,6 @@
 {
     "name": "Show Pony",
-    "description": "Keep your audience focused on what matters. Show Pony allows you to showcase important content in your browser by drawing a dynamic highlight box over your webpage content. Everything else has a semi-transparent overlay placed on top to de-emphasise it.",
+    "description": "Keep your audience focused on what matters. Show Pony enables showcasing important content in your browser during screen sharing.",
     "version": "2.0",
     "manifest_version": 3,
     "icons": {
