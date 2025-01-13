@@ -16,7 +16,7 @@ Only Chrome is supported at the moment, sorry if you're not a Chrome user.
 
 Two options: 
 
-1. Download from the Chrome Web Store: LINK PENDING
+1. Download from the Chrome Web Store: https://chromewebstore.google.com/detail/show-pony/aicppaopjgcbnnlighamkhnkhkdkojkj
 
 OR
 
