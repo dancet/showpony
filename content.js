@@ -31,6 +31,8 @@
         let isDown = false; // Indicates whether the user is dragging to draw
         let isDraggingCorner = false; // Indicates whether the user is dragging a corner
         let draggingCorner = null; // Tracks which corner is being dragged
+        let isDraggingBox = false; // Indicates whether the user is dragging the entire box
+        let dragStartX, dragStartY; // Initial mouse position when dragging starts
 
         // Create a "Clear" button to allow users to reset the overlay
         let clearButton = document.createElement("button");
@@ -53,6 +55,51 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         };
         document.body.appendChild(clearButton);
+
+        // Create instructional text overlay
+        let instructionText = document.createElement("div");
+        instructionText.id = "showponyInstructions";
+        instructionText.innerHTML = "Welcome to Show Pony.<br>Click and drag to get started.";
+        instructionText.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100002;
+            padding: 4px;
+            font-size: 24px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-weight: 500;
+            color: #ffffff;
+            background: linear-gradient(45deg, #8a2be2, #4169e1, #00bfff, #9370db);
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            user-select: none;
+        `;
+        
+        // Create inner content div for the black background
+        let innerContent = document.createElement("div");
+        innerContent.innerHTML = instructionText.innerHTML;
+        innerContent.style.cssText = `
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            padding: 20px 30px;
+            margin: 0;
+        `;
+        
+        // Clear the outer div and add the inner content
+        instructionText.innerHTML = "";
+        instructionText.appendChild(innerContent);
+        document.body.appendChild(instructionText);
+
+        // Function to hide instruction text
+        function hideInstructionText() {
+            if (instructionText && instructionText.parentNode) {
+                instructionText.remove();
+            }
+        }
 
         // Function to update the canvas offset (accounts for window scrolling)
         function updateOffset() {
@@ -88,6 +135,9 @@
             drawCornerBox(normalizedEndX, normalizedStartY, "top-right");
             drawCornerBox(normalizedStartX, normalizedEndY, "bottom-left");
             drawCornerBox(normalizedEndX, normalizedEndY, "bottom-right");
+            
+            // Draw drag handle for moving the entire box
+            drawDragHandle(normalizedStartX, normalizedEndX, normalizedStartY);
         }
 
         // Function to draw draggable corner indicators
@@ -128,6 +178,35 @@
             ctx.stroke(); // Render the corner lines
         }
 
+        // Function to draw drag handle for moving the entire box
+        function drawDragHandle(startX, endX, topY) {
+            let centerX = (startX + endX) / 2;
+            let handleLength = 30; // Length of the drag handle line
+            let offset = 10; // Distance above the box (matches corner handle offset)
+            
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "#878787";
+            ctx.beginPath();
+            ctx.moveTo(centerX - handleLength / 2, topY - offset);
+            ctx.lineTo(centerX + handleLength / 2, topY - offset);
+            ctx.stroke();
+        }
+
+        // Function to check if a point is inside the drag handle area
+        function isPointInDragHandle(x, y, startX, endX, topY) {
+            let centerX = (startX + endX) / 2;
+            let handleLength = 30;
+            let offset = 10;
+            let hitAreaHeight = 10; // Height of the clickable area
+            
+            return (
+                x >= centerX - handleLength / 2 &&
+                x <= centerX + handleLength / 2 &&
+                y >= topY - offset - hitAreaHeight / 2 &&
+                y <= topY - offset + hitAreaHeight / 2
+            );
+        }
+
         // Function to check if a point is inside a corner box
         function isPointInCornerBox(x, y, cornerX, cornerY) {
             let size = 30; // Size of the draggable area around the corner
@@ -143,12 +222,19 @@
         canvas.addEventListener("mousedown", (e) => {
             e.preventDefault();
             updateOffset();
+            
+            // Hide instruction text when user starts interacting
+            hideInstructionText();
 
             let mouseX = e.clientX - offsetX;
             let mouseY = e.clientY - offsetY;
 
-            // Check if the user is clicking a corner box
-            if (isPointInCornerBox(mouseX, mouseY, startX, startY)) {
+            // Check if the user is clicking the drag handle (only if a box exists)
+            if (startX !== undefined && isPointInDragHandle(mouseX, mouseY, Math.min(startX, endX), Math.max(startX, endX), Math.min(startY, endY))) {
+                isDraggingBox = true;
+                dragStartX = mouseX;
+                dragStartY = mouseY;
+            } else if (isPointInCornerBox(mouseX, mouseY, startX, startY)) {
                 isDraggingCorner = true;
                 draggingCorner = "top-left";
             } else if (isPointInCornerBox(mouseX, mouseY, endX, startY)) {
@@ -177,7 +263,23 @@
             let mouseX = e.clientX - offsetX;
             let mouseY = e.clientY - offsetY;
 
-            if (isDraggingCorner) {
+            if (isDraggingBox) {
+                // Calculate the movement delta
+                let deltaX = mouseX - dragStartX;
+                let deltaY = mouseY - dragStartY;
+                
+                // Move the entire box by the delta
+                startX += deltaX;
+                startY += deltaY;
+                endX += deltaX;
+                endY += deltaY;
+                
+                // Update the drag start position for the next movement
+                dragStartX = mouseX;
+                dragStartY = mouseY;
+                
+                drawOverlay(); // Redraw the overlay
+            } else if (isDraggingCorner) {
                 // Update the appropriate corner's position
                 switch (draggingCorner) {
                     case "top-left":
@@ -204,14 +306,16 @@
                 endY = mouseY;
                 drawOverlay(); // Redraw the overlay
             } else {
-                // Change the cursor to indicate when over a draggable corner
-                if (
+                // Change the cursor to indicate when over draggable elements
+                if (startX !== undefined && isPointInDragHandle(mouseX, mouseY, Math.min(startX, endX), Math.max(startX, endX), Math.min(startY, endY))) {
+                    canvas.style.cursor = "move";
+                } else if (
                     isPointInCornerBox(mouseX, mouseY, startX, startY) ||
                     isPointInCornerBox(mouseX, mouseY, endX, startY) ||
                     isPointInCornerBox(mouseX, mouseY, startX, endY) ||
                     isPointInCornerBox(mouseX, mouseY, endX, endY)
                 ) {
-                    canvas.style.cursor = "move";
+                    canvas.style.cursor = "nw-resize";
                 } else {
                     canvas.style.cursor = "default";
                 }
@@ -223,6 +327,7 @@
             isDown = false; // Stop drawing
             isDraggingCorner = false; // Stop dragging a corner
             draggingCorner = null; // Clear the active corner
+            isDraggingBox = false; // Stop dragging the box
         });
     } else {
         // If the extension is deactivated, reset everything
@@ -230,10 +335,12 @@
 
         chrome.runtime.sendMessage({ iconText: "off" });
 
-        // Remove the canvas and clear button if they exist
+        // Remove the canvas, clear button, and instruction text if they exist
         let showPony = document.getElementById("showpony");
         let clearButton = document.getElementById("clearOverlayButton");
+        let instructionText = document.getElementById("showponyInstructions");
         if (showPony) showPony.remove();
         if (clearButton) clearButton.remove();
+        if (instructionText) instructionText.remove();
     }
 })();
