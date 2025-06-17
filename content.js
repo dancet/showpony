@@ -34,11 +34,11 @@
         let isDraggingBox = false; // Indicates whether the user is dragging the entire box
         let dragStartX, dragStartY; // Initial mouse position when dragging starts
 
-        // Create a "Clear" button to allow users to reset the overlay
-        let clearButton = document.createElement("button");
-        clearButton.id = "clearOverlayButton"; // Unique ID for the button
-        clearButton.textContent = "Clear"; // Button label
-        clearButton.style.cssText = `
+        // Create an "Exit" button to deactivate the extension
+        let exitButton = document.createElement("button");
+        exitButton.id = "exitShowPonyButton"; // Unique ID for the button
+        exitButton.textContent = "Exit"; // Button label
+        exitButton.style.cssText = `
             position: fixed;
             top: 10px;
             right: 10px;
@@ -50,11 +50,91 @@
             border-radius: 3px;
             cursor: pointer;
         `;
+        
+        // Add functionality to exit the extension when the button is clicked
+        exitButton.onclick = () => {
+            // Deactivate the extension by setting the flag and cleaning up
+            window.contentScriptInjected = false;
+            chrome.runtime.sendMessage({ iconText: "off" });
+            
+            // Remove all extension elements
+            let showPony = document.getElementById("showpony");
+            let clearButton = document.getElementById("clearOverlayButton");
+            let exitButton = document.getElementById("exitShowPonyButton");
+            let logoContainer = document.getElementById("showPonyLogo");
+            let instructionText = document.getElementById("showponyInstructions");
+            if (showPony) showPony.remove();
+            if (clearButton) clearButton.remove();
+            if (exitButton) exitButton.remove();
+            if (logoContainer) logoContainer.remove();
+            if (instructionText) instructionText.remove();
+        };
+        document.body.appendChild(exitButton);
+
+        // Create logo container in top left corner
+        let logoContainer = document.createElement("div");
+        logoContainer.id = "showPonyLogo";
+        logoContainer.style.cssText = `
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 100001;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            height: 40px;
+        `;
+
+        // Create logo image
+        let logoImage = document.createElement("img");
+        logoImage.src = chrome.runtime.getURL("images/32x32.png");
+        logoImage.style.cssText = `
+            width: 32px;
+            height: 32px;
+        `;
+
+        // Create logo text
+        let logoText = document.createElement("span");
+        logoText.textContent = "Show Pony";
+        logoText.style.cssText = `
+            color: #ffffff;
+            font-size: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        `;
+
+        logoContainer.appendChild(logoImage);
+        logoContainer.appendChild(logoText);
+        document.body.appendChild(logoContainer);
+
+        // Create a "Clear" button to allow users to reset the overlay
+        let clearButton = document.createElement("button");
+        clearButton.id = "clearOverlayButton"; // Unique ID for the button
+        clearButton.textContent = "Clear"; // Button label
+        clearButton.style.cssText = `
+            position: fixed;
+            top: 10px;
+            z-index: 100001; 
+            padding: 5px 10px;
+            font-size: 14px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            cursor: pointer;
+        `;
+        
         // Add functionality to clear the overlay when the button is clicked
         clearButton.onclick = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         };
         document.body.appendChild(clearButton);
+        
+        // Position Clear button based on Exit button width after DOM insertion
+        setTimeout(() => {
+            let exitButtonWidth = exitButton.offsetWidth;
+            clearButton.style.right = (10 + exitButtonWidth + 10) + 'px'; // 10px edge + button width + 10px gap
+        }, 0);
 
         // Create instructional text overlay
         let instructionText = document.createElement("div");
@@ -62,7 +142,7 @@
         instructionText.innerHTML = "Welcome to Show Pony.<br>Click and drag to get started.";
         instructionText.style.cssText = `
             position: fixed;
-            top: 50%;
+            top: 25%;
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 100002;
@@ -335,12 +415,16 @@
 
         chrome.runtime.sendMessage({ iconText: "off" });
 
-        // Remove the canvas, clear button, and instruction text if they exist
+        // Remove the canvas, buttons, logo, and instruction text if they exist
         let showPony = document.getElementById("showpony");
         let clearButton = document.getElementById("clearOverlayButton");
+        let exitButton = document.getElementById("exitShowPonyButton");
+        let logoContainer = document.getElementById("showPonyLogo");
         let instructionText = document.getElementById("showponyInstructions");
         if (showPony) showPony.remove();
         if (clearButton) clearButton.remove();
+        if (exitButton) exitButton.remove();
+        if (logoContainer) logoContainer.remove();
         if (instructionText) instructionText.remove();
     }
 })();
