@@ -58,6 +58,9 @@
             window.contentScriptInjected = false;
             chrome.runtime.sendMessage({ iconText: "off" });
             
+            // Remove escape key event listener to prevent memory leak
+            document.removeEventListener('keydown', escapeKeyHandler);
+            
             // Remove all extension elements
             let showPony = document.getElementById("showpony");
             let clearButton = document.getElementById("clearOverlayButton");
@@ -76,11 +79,12 @@
         document.body.appendChild(exitButton);
 
         // Add escape key event listener to exit the extension
-        document.addEventListener('keydown', (e) => {
+        const escapeKeyHandler = (e) => {
             if (e.key === 'Escape') {
                 exitExtension();
             }
-        });
+        };
+        document.addEventListener('keydown', escapeKeyHandler);
 
         // Create logo container in top left corner
         let logoContainer = document.createElement("div");
@@ -402,13 +406,13 @@
                 if (startX !== undefined && isPointInDragHandle(mouseX, mouseY, Math.min(startX, endX), Math.max(startX, endX), Math.min(startY, endY))) {
                     canvas.style.cursor = "move";
                 } else if (isPointInCornerBox(mouseX, mouseY, startX, startY)) {
-                    canvas.style.cursor = "ne-resize"; // Top-left corner - drag northwest
+                    canvas.style.cursor = "ne-resize"; // Top-left corner - cursor points northeast
                 } else if (isPointInCornerBox(mouseX, mouseY, endX, startY)) {
-                    canvas.style.cursor = "nw-resize"; // Top-right corner - drag northeast  
+                    canvas.style.cursor = "nw-resize"; // Top-right corner - cursor points northwest  
                 } else if (isPointInCornerBox(mouseX, mouseY, startX, endY)) {
-                    canvas.style.cursor = "se-resize"; // Bottom-left corner - drag southwest
+                    canvas.style.cursor = "se-resize"; // Bottom-left corner - cursor points southeast
                 } else if (isPointInCornerBox(mouseX, mouseY, endX, endY)) {
-                    canvas.style.cursor = "sw-resize"; // Bottom-right corner - drag southeast
+                    canvas.style.cursor = "sw-resize"; // Bottom-right corner - cursor points southwest
                 } else {
                     canvas.style.cursor = "default";
                 }
