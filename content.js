@@ -46,13 +46,14 @@
             padding: 5px 10px;
             font-size: 14px;
             background-color: #fff;
+            color: #000;
             border: 1px solid #ccc;
             border-radius: 3px;
             cursor: pointer;
         `;
         
-        // Add functionality to exit the extension when the button is clicked
-        exitButton.onclick = () => {
+        // Function to exit the extension (shared by button and escape key)
+        function exitExtension() {
             // Deactivate the extension by setting the flag and cleaning up
             window.contentScriptInjected = false;
             chrome.runtime.sendMessage({ iconText: "off" });
@@ -68,8 +69,18 @@
             if (exitButton) exitButton.remove();
             if (logoContainer) logoContainer.remove();
             if (instructionText) instructionText.remove();
-        };
+        }
+
+        // Add functionality to exit the extension when the button is clicked
+        exitButton.onclick = exitExtension;
         document.body.appendChild(exitButton);
+
+        // Add escape key event listener to exit the extension
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                exitExtension();
+            }
+        });
 
         // Create logo container in top left corner
         let logoContainer = document.createElement("div");
@@ -119,6 +130,7 @@
             padding: 5px 10px;
             font-size: 14px;
             background-color: #fff;
+            color: #000;
             border: 1px solid #ccc;
             border-radius: 3px;
             cursor: pointer;
@@ -389,13 +401,14 @@
                 // Change the cursor to indicate when over draggable elements
                 if (startX !== undefined && isPointInDragHandle(mouseX, mouseY, Math.min(startX, endX), Math.max(startX, endX), Math.min(startY, endY))) {
                     canvas.style.cursor = "move";
-                } else if (
-                    isPointInCornerBox(mouseX, mouseY, startX, startY) ||
-                    isPointInCornerBox(mouseX, mouseY, endX, startY) ||
-                    isPointInCornerBox(mouseX, mouseY, startX, endY) ||
-                    isPointInCornerBox(mouseX, mouseY, endX, endY)
-                ) {
-                    canvas.style.cursor = "nw-resize";
+                } else if (isPointInCornerBox(mouseX, mouseY, startX, startY)) {
+                    canvas.style.cursor = "ne-resize"; // Top-left corner - drag northwest
+                } else if (isPointInCornerBox(mouseX, mouseY, endX, startY)) {
+                    canvas.style.cursor = "nw-resize"; // Top-right corner - drag northeast  
+                } else if (isPointInCornerBox(mouseX, mouseY, startX, endY)) {
+                    canvas.style.cursor = "se-resize"; // Bottom-left corner - drag southwest
+                } else if (isPointInCornerBox(mouseX, mouseY, endX, endY)) {
+                    canvas.style.cursor = "sw-resize"; // Bottom-right corner - drag southeast
                 } else {
                     canvas.style.cursor = "default";
                 }
