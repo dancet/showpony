@@ -37,7 +37,7 @@
         // Create an "Exit" button to deactivate the extension
         let exitButton = document.createElement("button");
         exitButton.id = "exitShowPonyButton"; // Unique ID for the button
-        exitButton.textContent = "Exit"; // Button label
+        exitButton.textContent = "Exit (esc)"; // Button label
         exitButton.style.cssText = `
             position: fixed;
             top: 10px;
