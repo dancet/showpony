@@ -405,14 +405,11 @@
                 // Change the cursor to indicate when over draggable elements
                 if (startX !== undefined && isPointInDragHandle(mouseX, mouseY, Math.min(startX, endX), Math.max(startX, endX), Math.min(startY, endY))) {
                     canvas.style.cursor = "move";
-                } else if (isPointInCornerBox(mouseX, mouseY, startX, startY)) {
-                    canvas.style.cursor = "ne-resize"; // Top-left corner - cursor points northeast
-                } else if (isPointInCornerBox(mouseX, mouseY, endX, startY)) {
-                    canvas.style.cursor = "nw-resize"; // Top-right corner - cursor points northwest  
-                } else if (isPointInCornerBox(mouseX, mouseY, startX, endY)) {
-                    canvas.style.cursor = "se-resize"; // Bottom-left corner - cursor points southeast
-                } else if (isPointInCornerBox(mouseX, mouseY, endX, endY)) {
-                    canvas.style.cursor = "sw-resize"; // Bottom-right corner - cursor points southwest
+                } else if (isPointInCornerBox(mouseX, mouseY, startX, startY) || 
+                           isPointInCornerBox(mouseX, mouseY, endX, startY) || 
+                           isPointInCornerBox(mouseX, mouseY, startX, endY) || 
+                           isPointInCornerBox(mouseX, mouseY, endX, endY)) {
+                    canvas.style.cursor = "move"; // All corners use move cursor
                 } else {
                     canvas.style.cursor = "default";
                 }
